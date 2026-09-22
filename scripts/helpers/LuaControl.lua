@@ -166,7 +166,9 @@ function control:customInsert(player, item, amount, takenFromCar, takenFromTrash
 
             -- no space left --> replace inferior items
             if replaceItems and limit > 0 then
-                for __,inferiorFuel in pairs(storage.fuelList[prototype.fuel_category]) do
+                local fuelGroup = storage.fuelList[prototype.fuel_categories and prototype.fuel_categories[1]]
+                if fuelGroup then
+                for __,inferiorFuel in pairs(fuelGroup) do
                     if inferiorFuel.name == prototype.name or limit <= 0 then break end
 
                     local returnToPlayer = 0
@@ -185,6 +187,7 @@ function control:customInsert(player, item, amount, takenFromCar, takenFromTrash
                     if returnToPlayer > 0 then
                         player:returnItems(inferiorFuel.name, returnToPlayer, takenFromCar, takenFromTrash)
                     end
+                end
                 end
             end
 
