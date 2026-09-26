@@ -65,8 +65,7 @@ local conditions = {
         if obj.object_name == "LuaItemStack" then
             p = obj.prototype
         end
-        local f = p.fuel_categories
-        return f ~= nil and f[1] ~= nil
+        return p.fuel_categories ~= nil
     end,
     ["ammo"] = function(obj) return obj.type == "ammo" end,
 }

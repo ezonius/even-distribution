@@ -42,20 +42,23 @@ function setup.on_init()
 		onLocationChanged       = {}, 
 	}
 
-	-- Fuel upgrade list (ascending fuel value)
-	storage.fuelList = _(prototypes.item)
-						:where("fuel")
-						:toArray()
-						:groupBy(function(__, item)
-							return item.fuel_categories and item.fuel_categories[1]
-						end)
-						:sort(function(a,b)
-							return a.fuel_value < b.fuel_value or
-								   a.fuel_acceleration_multiplier < b.fuel_acceleration_multiplier or
-								   a.fuel_top_speed_multiplier < b.fuel_top_speed_multiplier or
-								   a.fuel_emissions_multiplier < b.fuel_emissions_multiplier
-						end)
-						:toPlain()
+	-- Fuel upgrade list (ascending fuel value), grouped by every fuel category an item belongs to
+	storage.fuelList = {}
+	for __, item in pairs(prototypes.item) do
+		for __, category in ipairs(item.fuel_categories or {}) do
+			storage.fuelList[category] = storage.fuelList[category] or {}
+			local group = storage.fuelList[category]
+			group[#group + 1] = item
+		end
+	end
+	for __, group in pairs(storage.fuelList) do
+		table.sort(group, function(a,b)
+			return a.fuel_value < b.fuel_value or
+				   a.fuel_acceleration_multiplier < b.fuel_acceleration_multiplier or
+				   a.fuel_top_speed_multiplier < b.fuel_top_speed_multiplier or
+				   a.fuel_emissions_multiplier < b.fuel_emissions_multiplier
+			end)
+	end
 
 	-- Ammo upgrade list (ascending damage)
 	storage.ammoList = _(prototypes.item)
@@ -296,7 +299,7 @@ function setup.generateTrashItemList()
 			local default = defaultTrash[name] or defaultTrash[item.subgroup.name] or defaultTrash[item.group.name]
 			
 			if default and default ~= "ignore" then
-				if item.fuel_categories and item.fuel_categories[1] and not defaultTrash[name] then -- fuels default to 2 stacks as desired amount
+				if item.fuel_categories and not defaultTrash[name] then -- fuels default to 2 stacks as desired amount
 					items[name] = 2 * item.stack_size
 				else
 					items[name] = default * item.stack_size
